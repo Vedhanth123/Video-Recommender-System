@@ -6,42 +6,42 @@ Contains emotion mappings and descriptions used for recommendations.
 # Emotion to video mapping
 EMOTION_VIDEO_MAPPING = {
     "happy": {
-        "keywords": ["uplifting music", "comedy videos", "funny moments", "feel good content"],
-        "categories": ["22", "23", "24"],  # Music, Comedy, Entertainment
+        "keywords": ["learning techniques", "growth mindset", "financial literacy", "startup success stories", "business strategies", "holiday planning"],
+        "categories": ["27", "28", "10"],  # Education, Science & Tech, How-To & DIY
     },
     "sad": {
-        "keywords": ["relaxing music", "calming videos", "motivational speeches", "inspirational stories"],
-        "categories": ["22", "25", "27"],  # Music, News & Politics, Education
+        "keywords": ["motivational speeches", "standup comedy", "uplifting music", "inspiring stories"],
+        "categories": ["23", "22", "24"],  # Comedy, Music, Entertainment
     },
     "angry": {
-        "keywords": ["calming music", "meditation videos", "relaxation techniques", "nature sounds"],
-        "categories": ["22", "28"],  # Music, Science & Technology
+        "keywords": ["calming music", "positive facts", "relaxation techniques", "peaceful content"],
+        "categories": ["22", "27", "26"],  # Music, Education, How-To & Style
     },
     "fear": {
-        "keywords": ["soothing music", "positive affirmations", "calming content", "guided relaxation"],
-        "categories": ["22", "26"],  # Music, Howto & Style
+        "keywords": ["guided meditation", "calming music", "relaxation techniques", "soothing tones"],
+        "categories": ["22", "26"],  # Music, How-To & Style
     },
     "surprise": {
-        "keywords": ["amazing facts", "incredible discoveries", "wow moments", "mind blowing"],
-        "categories": ["28", "24", "27"],  # Science & Tech, Entertainment, Education
+        "keywords": ["fascinating facts", "new discoveries", "educational content", "cutting-edge research"],
+        "categories": ["28", "27", "24"],  # Science & Tech, Education, Entertainment
     },
     "neutral": {
-        "keywords": ["interesting documentaries", "educational content", "informative videos", "how-to guides"],
-        "categories": ["27", "28", "26"],  # Education, Science & Tech, Howto & Style
+        "keywords": ["learning techniques", "growth mindset", "financial education", "business strategies"],
+        "categories": ["27", "28", "10"],  # Education, Science & Tech, How-To & DIY
     },
     "disgust": {
-        "keywords": ["satisfying videos", "clean organization", "aesthetic content", "art videos"],
-        "categories": ["24", "26"],  # Entertainment, Howto & Style
+        "keywords": ["meditation techniques", "mindfulness practices", "calming visuals", "peaceful content"],
+        "categories": ["26", "22"],  # How-To & Style, Music
     }
 }
 
 # Emotion descriptions for Gemini context
 EMOTION_DESCRIPTIONS = {
-    "happy": "You're in a happy mood. You might enjoy content that amplifies your positive feelings, makes you laugh, or celebrates joyful moments.",
-    "sad": "You seem to be feeling sad. You might benefit from content that provides comfort, gentle uplift, or helps process emotions.",
-    "angry": "You appear to be feeling angry. You might benefit from content that helps you calm down, relax, or redirect your focus.",
-    "fear": "You seem to be experiencing fear or anxiety. You might benefit from content that provides reassurance, calm, or positive distraction.",
-    "surprise": "You look surprised. You might enjoy content that further stimulates your curiosity or shows you more amazing things.",
-    "neutral": "You appear to be in a neutral mood. You might enjoy informative content that engages your mind.",
-    "disgust": "You seem to be feeling disgusted. You might benefit from content that provides pleasant visual relief or positive sensory experiences."
+    "happy": "You're in a happy mood. This is a great time for learning new things, exploring growth mindset concepts, or diving into topics like finance, startups, or business. Maybe even plan your next holiday!",
+    "sad": "You seem to be feeling down. Some motivational content, standup comedy, or uplifting music might help improve your mood.",
+    "angry": "You appear to be feeling angry. Calming music and positive facts can help soothe your mind and redirect your focus in a productive way.",
+    "fear": "You seem to be experiencing anxiety. Meditation, soothing music, and calming content can help restore your sense of peace and security.",
+    "surprise": "You look surprised! This is a perfect time to learn about new discoveries and fascinating facts that will expand your knowledge.",
+    "neutral": "You appear to be in a balanced mood. This is a great opportunity to explore learning resources, growth mindset concepts, or business and financial topics.",
+    "disgust": "You seem to be feeling uncomfortable. Meditation practices can help center your mind and provide a more peaceful perspective."
 }

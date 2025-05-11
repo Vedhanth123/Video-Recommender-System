@@ -12,6 +12,7 @@ This application recommends videos based on the user's detected emotions using a
 - **Emotion Detection**: Uses facial analysis to detect the user's current emotion
 - **Video Recommendation**: Suggests YouTube videos based on detected emotions
 - **Neural Network**: Uses deep learning to personalize recommendations based on historical data
+- **Enhanced Recommendations**: Adds time-of-day awareness, collaborative filtering, and content diversity
 - **User Insights**: Analytics dashboard to visualize emotional patterns and video preferences
 
 ## Setup and Installation
@@ -86,6 +87,40 @@ This allows for personalization beyond simple emotion-to-category mapping, takin
 - Individual user preferences
 - Time-of-day patterns
 - Subtle emotional variations
+
+## Enhanced Recommendation System
+
+The system includes advanced recommendation features that provide more personalized, contextual suggestions:
+
+### Time-of-Day Awareness
+
+- Morning: Energizing, motivational content
+- Afternoon: Educational, informative content
+- Evening: Entertainment, relaxing content
+- Night: Calming, peaceful content
+
+### Collaborative Filtering
+
+Identifies similar users based on video interaction history and recommends videos they enjoyed.
+
+### Content Diversity
+
+Ensures recommendations include videos from multiple categories rather than focusing on a single topic.
+
+### Reranking Algorithm
+
+Combines multiple factors:
+
+- Neural network confidence (35%)
+- Time-of-day appropriateness (15%)
+- Collaborative filtering signals (25%)
+- Category preference matching (25%)
+
+### Testing Enhancements
+
+Run `Test_Enhancements.bat` to see how the enhanced recommendation system works.
+
+For detailed documentation, see `ENHANCEMENT_DOCUMENTATION.md`.
 
 ## Troubleshooting
 

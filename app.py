@@ -32,6 +32,7 @@ from database_utils import ensure_emotion_logs_schema, log_video_click, get_geol
 from ml_recommender import MLRecommendationEngine
 from nn_recommender import NNRecommender
 from user_insights import UserInsights, authenticate_user_by_face
+from integration import initialize_enhancement_system
 
 def main():
     """Main application function for the Streamlit app."""
@@ -73,6 +74,9 @@ def main():
     
     if 'neural_recommender' not in st.session_state:
         st.session_state.neural_recommender = NNRecommender()
+    
+    # Initialize the enhancement system
+    initialize_enhancement_system()
     
     if 'detected_emotions' not in st.session_state:
         st.session_state.detected_emotions = {}
@@ -292,6 +296,24 @@ def main():
                                                     🧠 AI Recommendation ({confidence}% match)
                                                 </div>
                                                 """, unsafe_allow_html=True)
+                                            
+                                            # Show enhancement badges if available
+                                            if 'enhancement_tags' in video and video['enhancement_tags']:
+                                                for tag in video['enhancement_tags']:
+                                                    if tag == 'time-optimized':
+                                                        st.markdown(f"""
+                                                        <div style="background-color: #2E8B57; color: white; padding: 5px 10px; 
+                                                                    border-radius: 15px; display: inline-block; font-size: 0.8em; margin-bottom: 10px; margin-right: 5px;">
+                                                            ⏰ Time-Optimized
+                                                        </div>
+                                                        """, unsafe_allow_html=True)
+                                                    elif tag == 'collaborative':
+                                                        st.markdown(f"""
+                                                        <div style="background-color: #1E90FF; color: white; padding: 5px 10px; 
+                                                                    border-radius: 15px; display: inline-block; font-size: 0.8em; margin-bottom: 10px; margin-right: 5px;">
+                                                            👥 Collaborative
+                                                        </div>
+                                                        """, unsafe_allow_html=True)
                                             
                                             st.image(video['thumbnail'])
                                             

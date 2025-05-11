@@ -14,6 +14,7 @@
    - [Recommendation Explanation](#recommendation-explanation)
    - [Neural Network Integration](#neural-network-integration)
    - [Machine Learning Integration](#machine-learning-integration)
+   - [Enhanced Recommendation System](#enhanced-recommendation-system)
    - [User Interface](#user-interface)
 4. [Implementation Details](#implementation-details)
    - [Local LLM Integration](#local-llm-integration)
@@ -101,6 +102,17 @@ The system interacts with external services (YouTube API) while maintaining user
 - Builds user profiles based on interaction history
 - Adapts to individual preference patterns
 - Works in conjunction with neural recommendations
+
+### Enhanced Recommendation System
+
+**Files:** `recommendation_enhancement.py`, `integration.py`
+
+- Provides time-of-day awareness to recommend content appropriate for the current time
+- Implements collaborative filtering to find similar users and their video preferences
+- Ensures content diversity by including videos from different categories
+- Builds rich user context profiles based on viewing habits and preferences
+- Uses a sophisticated reranking algorithm that combines multiple scoring factors
+- For detailed documentation, see [ENHANCEMENT_DOCUMENTATION.md](ENHANCEMENT_DOCUMENTATION.md)
 
 ### User Interface
 
