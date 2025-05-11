@@ -16,16 +16,17 @@ class RecommendationEngine:
     Class for generating personalized recommendations based on user emotions.
     Combines YouTube recommendations with Gemini explanations.
     """
-    def __init__(self, youtube_recommender, explainer):
+    
+    def __init__(self, youtube_recommender, gemini_explainer):
         """
         Initialize the recommendation engine with recommender components.
         
         Args:
             youtube_recommender: An instance of YouTubeRecommender
-            explainer: An instance of explanation provider (LocalExplainer or GeminiExplainer)
+            gemini_explainer: An instance of GeminiExplainer
         """
         self.youtube = youtube_recommender
-        self.explainer = explainer  # Renamed from gemini to explainer for better abstraction
+        self.gemini = gemini_explainer
         self.cached_recommendations = {}
     
     def get_recommendations_for_user(self, user_name, emotion_data):
@@ -194,16 +195,22 @@ class RecommendationEngine:
                 # Special explanation for neural recommendations
                 category = video.get('nn_category', 'this category')
                 confidence = video.get('nn_confidence', 0) * 100  # Convert to percentage
-                explanation = self.explainer.explain_recommendation(
-                    video,
-                    user_name,
-                    emotion
+                
+                explanation = self.gemini.explain_recommendation(
+                    video_title=video['title'],
+                    video_category=category,
+                    user_emotion=emotion,
+                    user_name=user_name,
+                    neural_rec=True,
+                    confidence=confidence
                 )
-            else:                # Regular explanation
-                explanation = self.explainer.explain_recommendation(
-                    video,
-                    user_name,
-                    emotion
+            else:
+                # Regular explanation
+                explanation = self.gemini.explain_recommendation(
+                    video_title=video['title'],
+                    video_category=video['category_name'],
+                    user_emotion=emotion,
+                    user_name=user_name
                 )
                 
             video['explanation'] = explanation

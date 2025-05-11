@@ -6,8 +6,13 @@ numpy==1.26.4
 pandas==2.2.0
 scikit-learn==1.4.0
 google-api-python-client==2.120.0
-google-generativeai==0.3.2
+# google-generativeai==0.3.2  # No longer required - replaced with local model
+transformers==4.36.2  # Local model for recommendation explanations
+torch==2.1.2  # PyTorch for transformers
+accelerate==0.25.0  # For optimized transformer model loading
 Pillow==10.2.0
 requests==2.31.0
 sqlite3==3.45.0
 plotly==5.18.0
+tensorflow==2.15.0
+joblib==1.3.2

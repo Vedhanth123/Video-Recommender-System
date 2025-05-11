@@ -11,12 +11,13 @@ import time
 import threading
 import sqlite3
 import streamlit as st
+import pandas as pd
+import plotly.express as px
 from datetime import datetime
 
 # Import configuration
 from config import (
     YOUTUBE_API_KEY,
-    GEMINI_API_KEY,
     DATABASE_PATH,
     FACE_DETECTION_DURATION
 )
@@ -24,11 +25,12 @@ from config import (
 # Import modules
 from emotion_analysis import EmotionAnalysis
 from youtube_recommender import YouTubeRecommender
-from gemini_explainer import GeminiExplainer
+from local_explainer import LocalExplainer
 from recommendation_engine import RecommendationEngine
 from emotion_constants import EMOTION_DESCRIPTIONS
 from database_utils import ensure_emotion_logs_schema, log_video_click, get_geolocation, ensure_all_database_tables
 from ml_recommender import MLRecommendationEngine
+from nn_recommender import NNRecommender
 from user_insights import UserInsights, authenticate_user_by_face
 
 def main():
@@ -57,18 +59,20 @@ def main():
     
     if 'youtube_recommender' not in st.session_state:
         st.session_state.youtube_recommender = YouTubeRecommender(YOUTUBE_API_KEY)
-    
-    if 'gemini_explainer' not in st.session_state:
-        st.session_state.gemini_explainer = GeminiExplainer(GEMINI_API_KEY)
+    if 'explainer' not in st.session_state:
+        st.session_state.explainer = LocalExplainer()
     
     if 'recommendation_engine' not in st.session_state:
         st.session_state.recommendation_engine = RecommendationEngine(
             st.session_state.youtube_recommender,
-            st.session_state.gemini_explainer
+            st.session_state.explainer
         )
     
     if 'ml_recommender' not in st.session_state:
         st.session_state.ml_recommender = MLRecommendationEngine()
+    
+    if 'neural_recommender' not in st.session_state:
+        st.session_state.neural_recommender = NNRecommender()
     
     if 'detected_emotions' not in st.session_state:
         st.session_state.detected_emotions = {}
@@ -190,6 +194,16 @@ def main():
     with tab2:
         st.header("Video Recommendations")
         
+        # Show if neural network is available
+        nn_ready = False
+        if 'neural_recommender' in st.session_state and st.session_state.neural_recommender.is_ready():
+            nn_ready = True
+            st.sidebar.success("🧠 Neural Network Recommendation System: Active")
+        else:
+            st.sidebar.info("🔄 Using traditional recommendation system")
+            if 'neural_recommender' in st.session_state:
+                st.sidebar.markdown("To activate neural recommendations, use the Admin Panel to train the model")
+        
         # User selection
         users = st.session_state.emotion_analyzer.known_face_names
         if users:
@@ -207,7 +221,7 @@ def main():
             
             if get_recommendations:
                 st.session_state.current_user = selected_user
-                  # Check if we have emotion data for this user
+                # Check if we have emotion data for this user
                 user_emotion = None
                 if selected_user in st.session_state.detected_emotions:
                     user_emotion = st.session_state.detected_emotions[selected_user]
@@ -268,6 +282,17 @@ def main():
                                         video = recommendations[i + j]
                                         with cols[j]:
                                             st.markdown(f"#### {video['title']}")
+                                            
+                                            # Add badge for neural network recommendation
+                                            if 'nn_category' in video and 'nn_confidence' in video:
+                                                confidence = int(video['nn_confidence'] * 100)
+                                                st.markdown(f"""
+                                                <div style="background-color: #6a0dad; color: white; padding: 5px 10px; 
+                                                            border-radius: 15px; display: inline-block; font-size: 0.8em; margin-bottom: 10px;">
+                                                    🧠 AI Recommendation ({confidence}% match)
+                                                </div>
+                                                """, unsafe_allow_html=True)
+                                            
                                             st.image(video['thumbnail'])
                                             
                                             # Display the Gemini-generated explanation in a highlighted box
@@ -276,63 +301,34 @@ def main():
                                                 <strong>Why this might help:</strong> {video['explanation']}
                                             </div>
                                             """, unsafe_allow_html=True)
-                                            
                                             st.markdown(f"**Channel:** {video['channel']}")
                                             st.markdown(f"**Views:** {video['views']:,} • **Duration:** {video['duration']}")
                                             st.markdown(f"**Description:** {video['description'][:100]}...")
-                                              # YouTube embed or link with click tracking
-                                            video_id = video['id']
-                                            video_url = f"https://www.youtube.com/watch?v={video_id}"
                                             
-                                            # Use a regular button for logging + a direct link for opening
-                                            if st.button(f"Watch on YouTube", key=f"watch_button_{video_id}_{i}_{j}"):
-                                                # Log the video click
-                                                city, country = get_geolocation()
-                                                timestamp = int(time.time())
-                                                
-                                                # Extract a category from the video's description or title
-                                                video_category = "Unknown"
-                                                if "music" in video['title'].lower() or "song" in video['title'].lower():
-                                                    video_category = "Music"
-                                                elif "game" in video['title'].lower() or "gaming" in video['title'].lower():
-                                                    video_category = "Gaming"
-                                                elif "news" in video['title'].lower():
-                                                    video_category = "News"
-                                                elif "tutorial" in video['title'].lower() or "how to" in video['title'].lower():
-                                                    video_category = "Education"
-                                                
-                                                # Log the click in the database
-                                                log_video_click(
-                                                    selected_user,
-                                                    video_id,
-                                                    video['title'],
-                                                    video_category,
-                                                    user_emotion['emotion'].lower(),
-                                                    timestamp,
-                                                    city,
-                                                    country
-                                                )
-                                                
-                                                # Update the ML model with the new click data
-                                                st.session_state.ml_recommender.build_user_profile(selected_user)
-                                                
-                                                # Provide a direct link that will work
-                                                st.markdown(f"""
-                                                <div style="text-align: center; margin-top: 10px;">
-                                                    <a href="{video_url}" target="_blank">
-                                                        <button style="
-                                                            background-color: #FF0000;
-                                                            color: white;
-                                                            border: none;
-                                                            border-radius: 4px;
-                                                            padding: 10px 16px;
-                                                            font-size: 16px;
-                                                            cursor: pointer;">
-                                                            Click here to open YouTube
-                                                        </button>
-                                                    </a>
-                                                </div>
-                                                """, unsafe_allow_html=True)
+                                            # YouTube embed or link
+                                            video_id = video['id']
+                                            st.markdown(f'''
+                                            <div style="text-align: center;">
+                                                <a href="https://www.youtube.com/watch?v={video_id}" target="_blank">
+                                                    <button style="
+                                                        background-color: #FF0000;
+                                                        color: white;
+                                                        border: none;
+                                                        border-radius: 4px;
+                                                        padding: 10px 16px;
+                                                        font-size: 16px;
+                                                        cursor: pointer;
+                                                        display: inline-flex;
+                                                        align-items: center;
+                                                        margin: 10px 0;">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white" style="margin-right: 8px;">
+                                                            <path d="M10,16.5V7.5L16,12M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+                                                        </svg>
+                                                        Watch on YouTube
+                                                    </button>
+                                                </a>
+                                            </div>
+                                            ''', unsafe_allow_html=True)
                                             
                                             st.markdown("---")
                         else:
@@ -408,10 +404,75 @@ def main():
             **Warning:** The Exit Application button will shut down the Streamlit server.
             """)
             
-            # Add more admin features here in the future
+            st.subheader("Neural Network Training")
+            st.markdown("""
+            Train the neural network model with the current interaction data. This will improve 
+            recommendations based on emotional patterns and viewing history.
+            
+            **Note:** You'll need at least 10 video interactions before training can begin.
+            """)            # Neural Network Training Instructions
+            st.info("""
+            **Neural Network Training Instructions**
+            
+            The neural network model must be trained separately before using the app. Follow these steps:
+            
+            1. Ensure you have at least 10 video interactions in the database
+            2. Close this application
+            3. Run the Training Script: `Train_Model.bat` 
+            4. Restart this application after training completes
+            
+            This separation allows for more efficient training without consuming application resources.
+            """)
+            
+            # Show neural network status
+            if 'neural_recommender' in st.session_state and st.session_state.neural_recommender.is_ready():
+                st.success("✅ Neural Network model is loaded and ready")
+                
+                # Show model information
+                st.markdown("**Model Information**")
+                st.markdown("- Model file: `models/emotion_video_nn.h5`")
+                st.markdown("- Encoders file: `models/emotion_video_encoders.pkl`")
+                st.markdown("- Status: Ready for predictions")
+                
+                # Display training history chart if available
+                history_plot_path = os.path.join("models", "training_history.png")
+                if os.path.exists(history_plot_path):
+                    st.subheader("Training History")
+                    st.image(history_plot_path, caption="Neural Network Training Progress", use_column_width=True)
+                    st.markdown("*This chart shows the model's accuracy and loss during training*")
+            else:
+                st.warning("⚠️ Neural Network model is not available")
+                st.markdown("""
+                No trained model found. Please run the training script as described above.
+                The system will fall back to traditional recommendations until a model is trained.
+                """)
             
         with col2:
             st.subheader("Actions")
+            
+            # Open training script button
+            if os.path.exists("Train_Model.bat"):
+                if st.button("Run Neural Network Training Script", use_container_width=True):
+                    # Launch the training script in a separate window
+                    os.startfile("Train_Model.bat")
+                    st.info("Training script opened in a separate window")
+                
+                st.markdown("""
+                **Note:** The training script will:
+                - Process your interaction data
+                - Train a neural network model
+                - Save the model for future predictions
+                - Create a visualization of training progress
+                """)
+            
+            # Refresh button
+            if st.button("Refresh Model Status", use_container_width=True):
+                st.experimental_rerun()
+            
+            st.markdown("---")
+            
+            st.markdown("---")
+            
             if st.button("Exit Application", use_container_width=True, type="primary"):
                 st.session_state.should_exit = True
                 st.rerun()
