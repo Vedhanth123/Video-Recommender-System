@@ -87,6 +87,53 @@ def ensure_emotion_logs_schema():
     except Exception as e:
         st.error(f"Error ensuring emotion_logs schema: {e}")
 
+def ensure_all_database_tables():
+    """
+    Ensure all necessary database tables exist with the correct schema.
+    This should be called at application startup.
+    """
+    # First ensure emotion_logs has the right schema
+    ensure_emotion_logs_schema()
+    
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+
+        # Ensure video_interactions table exists
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS video_interactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            video_genre TEXT,
+            emotion TEXT,
+            timestamp INTEGER,
+            city TEXT,
+            country TEXT
+        )
+        ''')
+
+        # Ensure video_clicks table exists
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS video_clicks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            video_id TEXT,
+            video_title TEXT,
+            video_category TEXT,
+            emotion TEXT,
+            timestamp INTEGER,
+            city TEXT,
+            country TEXT
+        )
+        ''')
+
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        st.error(f"Database error when ensuring tables exist: {e}")
+        return False
+
 def log_emotion_data(name, emotion, input_text, timestamp, city, country):
     """
     Log emotion data to the emotion_logs table.

@@ -27,8 +27,9 @@ from youtube_recommender import YouTubeRecommender
 from gemini_explainer import GeminiExplainer
 from recommendation_engine import RecommendationEngine
 from emotion_constants import EMOTION_DESCRIPTIONS
-from database_utils import ensure_emotion_logs_schema, log_video_click, get_geolocation
+from database_utils import ensure_emotion_logs_schema, log_video_click, get_geolocation, ensure_all_database_tables
 from ml_recommender import MLRecommendationEngine
+from user_insights import UserInsights, authenticate_user_by_face
 
 def main():
     """Main application function for the Streamlit app."""
@@ -47,8 +48,8 @@ def main():
         layout="wide",
     )
     
-    # Ensure database tables have the correct schema
-    ensure_emotion_logs_schema()
+    # Ensure all database tables have the correct schema
+    ensure_all_database_tables()
     
     # Initialize session state for storing data between reruns
     if 'emotion_analyzer' not in st.session_state:
@@ -83,7 +84,7 @@ def main():
     st.markdown("This application detects your facial emotions and recommends YouTube videos based on your mood.")
     
     # Create tabs
-    tab1, tab2, tab3 = st.tabs(["Face Detection", "Video Recommendations", "Admin Panel"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Face Detection", "Video Recommendations", "User Insights", "Admin Panel"])
     
     # Face Detection Tab
     with tab1:
@@ -339,8 +340,60 @@ def main():
         else:
             st.warning("No known users found. Please add users via Face Detection first.")
     
-    # Admin Panel Tab
+    # User Insights Tab
     with tab3:
+        st.header("User Insights Dashboard")
+        st.markdown("View personalized analytics about your emotions and video interactions.")
+        
+        # Face authentication for accessing insights
+        if 'insights_authenticated_user' not in st.session_state or not st.session_state.insights_authenticated_user:
+            st.warning("Please authenticate with your face to view your insights.")
+            
+            authenticate_col1, authenticate_col2 = st.columns([3, 1])
+            
+            with authenticate_col1:
+                start_auth = st.button("Start Face Authentication", use_container_width=True)
+                
+            if start_auth:
+                authenticated_user = authenticate_user_by_face()
+                if authenticated_user:
+                    st.session_state.insights_authenticated_user = authenticated_user
+                    st.experimental_rerun()  # Rerun to refresh the page with authentication
+        else:
+            # Already authenticated, show insights
+            authenticated_user = st.session_state.insights_authenticated_user
+            
+            st.success(f"Authenticated as: {authenticated_user}")
+            
+            # Add a logout button
+            if st.button("Logout from Insights", key="insights_logout"):
+                st.session_state.insights_authenticated_user = None
+                st.experimental_rerun()
+                
+            # Initialize and display user insights
+            insights = UserInsights(authenticated_user)
+            
+            if not insights.has_data():
+                st.warning(f"No interaction data found for {authenticated_user}. Please use the system more to generate insights.")
+            else:
+                # Create insights sections
+                insight_section = st.radio(
+                    "Choose insight category:",
+                    options=["Emotion Analysis", "Video Watching Patterns", "Personalized Recommendations"],
+                    horizontal=True
+                )
+                
+                if insight_section == "Emotion Analysis":
+                    insights.show_emotion_trends()
+                    
+                elif insight_section == "Video Watching Patterns":
+                    insights.show_video_insights()
+                    
+                elif insight_section == "Personalized Recommendations":
+                    insights.show_recommendations()
+    
+    # Admin Panel Tab
+    with tab4:
         st.header("Admin Control Panel")
         st.markdown("Use this panel to manage the application.")
         
