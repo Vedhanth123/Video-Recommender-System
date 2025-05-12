@@ -7,7 +7,7 @@ import os
 import streamlit as st
 
 # API Keys
-YOUTUBE_API_KEY = "AIzaSyAVer6TDzEBXthg6l4LtxJSMW6ybHGqB8c"  # Replace with your actual API key
+YOUTUBE_API_KEY = "AIzaSyDrWNSTdwSkWd_Cig5FTX2pq0DqTFU-ogE"  # Replace with your actual API key
 # GEMINI_API_KEY is no longer used - using local model instead
 
 # Database settings
